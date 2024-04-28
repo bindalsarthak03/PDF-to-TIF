@@ -7,7 +7,6 @@ exports.convertController = async (req, res) => {
     const uploadsFolder = path.join(__dirname, '../uploads/');
     const outputFolder = path.join(__dirname, '../convertedTif/');
 
-    // List all files in the uploads folder
     fs.readdir(uploadsFolder, (err, files) => {
       if (err) {
         console.error('Error reading uploads folder:', err);
@@ -15,12 +14,9 @@ exports.convertController = async (req, res) => {
         return;
       }
 
-      // Filter PDF files
       const pdfFiles = files.filter(file => path.extname(file).toLowerCase() === '.pdf');
 
-      // Convert each PDF file
       pdfFiles.forEach((pdfFile) => {
-        // Extract the filename without extension
         const fileName = path.basename(pdfFile, path.extname(pdfFile));
 
         // 1. Convert PDF to multi-page TIFF
@@ -41,9 +37,9 @@ exports.convertController = async (req, res) => {
           const singlePageTiffPath = path.join(outputFolder, `${fileName}_combined.tiff`);
           im.convert([
             multiPageTiffPath,
-            '-gravity', 'center',   // Position pages at center
-            '-extent', '0x0',       // Auto-calculate the canvas extent 
-            '-append', // Append vertically
+            '-gravity', 'center',
+            '-extent', '0x0',       
+            '-append', 
             singlePageTiffPath
           ], async (err, stdout) => {
             if (err) {
@@ -51,8 +47,6 @@ exports.convertController = async (req, res) => {
               res.status(500).json({ error: 'Internal Server Error' });
               return;
             }
-
-            // Remove the original multi-page TIFF (optional)
             fs.unlinkSync(multiPageTiffPath);
 
             console.log(`Successfully converted ${pdfFile} to TIFF`);
