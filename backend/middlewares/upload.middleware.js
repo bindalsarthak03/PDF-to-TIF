@@ -9,6 +9,7 @@ const storage = multer.diskStorage({
     }
 });
 
-exports.uploadMiddleware = multer({ storage: storage });
-
-
+// Export a function that returns the multer middleware
+module.exports = function uploadMiddleware() {
+    return multer({ storage: storage }).array('pdfs', 100); // 'pdfs' is the name of the field containing the files, 100 is the maximum number of files allowed
+};

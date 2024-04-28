@@ -1,6 +1,6 @@
 exports.uploadController = async (req, res) => {
-    const uploadedFiles = req.file;
-    if (!uploadedFiles) {
+    const uploadedFiles = req.files; // Use req.files to access multiple files
+    if (!uploadedFiles || uploadedFiles.length === 0) {
         res.status(400).json({ error: 'No files uploaded' });
         return;
     }
