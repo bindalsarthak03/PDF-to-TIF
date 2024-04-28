@@ -29,7 +29,6 @@ const UploadComponent = () => {
 
       console.log('File uploaded successfully:', response.data);
 
-      // Reset the file input and show an alert
       setFile(null);
       alert('File uploaded successfully!');
 
