@@ -4,7 +4,7 @@ const im = require('imagemagick');
 
 exports.convertController = async (req, res) => {
     try {
-        const pdfPath = path.join(__dirname, '../uploads/420605499261290278838506295721.pdf'); // Path to the uploaded PDF
+        const pdfPath = path.join(__dirname, '../uploads/Resume_SB.pdf'); // Path to the uploaded PDF
         const outputFolder = path.join(__dirname, '../convertedTif/'); // Output folder for TIFF files
         console.log(pdfPath)
         console.log(outputFolder)
