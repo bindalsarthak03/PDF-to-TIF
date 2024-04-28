@@ -6,9 +6,11 @@ exports.convertController = async (req, res) => {
   try {
     const pdfPath = path.join(__dirname, '../uploads/420605499261290278838506295721.pdf');
     const outputFolder = path.join(__dirname, '../convertedTif/');
+    //Extracting the filename
+    const fileName = path.basename(pdfPath, path.extname(pdfPath));
 
     // 1. Convert PDF to multi-page TIFF
-    const multiPageTiffPath = path.join(outputFolder, 'output.tiff');
+    const multiPageTiffPath = path.join(outputFolder, `${fileName}.tiff`);
     im.convert([
       pdfPath,
       '-density', '100', '-quality', '100', 
@@ -22,7 +24,7 @@ exports.convertController = async (req, res) => {
       }
 
       // 2. Convert multi-page TIFF to single-page TIFF 
-      const singlePageTiffPath = path.join(outputFolder, 'output_combined.tiff');
+      const singlePageTiffPath = path.join(outputFolder, `${fileName}_combined.tiff`);
       im.convert([
         multiPageTiffPath,
         '-gravity', 'center',   // Position pages at center
