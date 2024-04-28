@@ -1,59 +1,39 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
-const Jimp = require('jimp');
+const im = require('imagemagick');
+
 exports.convertController = async (req, res) => {
-  try {
-    const pdfFiles = fs.readdirSync('../backend/uploads').filter(file => path.extname(file) === '.pdf');
+    try {
+        const pdfPath = path.join(__dirname, '../uploads/420605499261290278838506295721.pdf'); // Path to the uploaded PDF
+        const outputFolder = path.join(__dirname, '../convertedTif/'); // Output folder for TIFF files
+        console.log(pdfPath)
+        console.log(outputFolder)
+        // Convert PDF to PNG
+        const pngPath = path.join(outputFolder, 'output.png');
+        im.convert([pdfPath, '-density', '100', '-quality', '100', '-resize', '768x512!', '-compress', 'jpeg', pngPath], async (err, stdout) => {
+            if (err) {
+                console.error('Error converting PDF to PNG:', err);
+                res.status(500).json({ error: 'Internal Server Error' });
+                return;
+            }
 
-    if (pdfFiles.length === 0) {
-      return res.status(400).json({ error: 'No PDF files found in the uploads directory' });
-    }
+            // Convert PNG to TIFF
+            const tiffPath = path.join(outputFolder, 'output.tiff');
+            im.convert([pngPath, tiffPath], async (err, stdout) => {
+                if (err) {
+                    console.error('Error converting PNG to TIFF:', err);
+                    res.status(500).json({ error: 'Internal Server Error' });
+                    return;
+                }
 
-    const convertedTiffs = [];
+                // Remove PNG file
+                fs.unlinkSync(pngPath);
 
-    for (const pdfFile of pdfFiles) {
-      const pdfPath = path.join('../backend/uploads', pdfFile);
-      
-      // Use pdf-image to render each page of the PDF as an image
-      const convertProcess = spawn('pdftoppm', [
-        '-tiff',
-        '-r', '300', // Set resolution (adjust as needed)
-        pdfPath,
-        path.join('uploads', pdfFile.split('.')[0]) // Output file prefix
-      ]);
-
-      await new Promise((resolve, reject) => {
-        convertProcess.on('close', (code) => {
-          if (code === 0) {
-            resolve();
-          } else {
-            reject(new Error(`pdftoppm process exited with code ${code}`));
-          }
+                res.status(200).json({ message: 'PDF converted to TIFF successfully', tiffFile: tiffPath });
+            });
         });
-      });
-
-      // Rename and collect TIFF files
-      const tiffFiles = fs.readdirSync('../backend/uploads').filter(file => file.startsWith(pdfFile.split('.')[0]));
-
-      for (const tiffFile of tiffFiles) {
-        const tiffPath = path.join('uploads', tiffFile);
-        const image = await Jimp.read(tiffPath);
-
-        // Save the image as TIFF
-        const newTiffPath = tiffPath.replace('.tif', '_converted.tiff');
-        await image.writeAsync(newTiffPath);
-
-        convertedTiffs.push(newTiffPath);
-
-        // Delete the temporary TIFF file
-        fs.unlinkSync(tiffPath);
-      }
+    } catch (error) {
+        console.error('Error converting PDF to TIFF:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    res.json({ convertedTiffs });
-  } catch (error) {
-    console.error('Error converting PDFs to TIFF:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
 };
