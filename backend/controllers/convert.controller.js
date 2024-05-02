@@ -1,6 +1,10 @@
+// Using imagemagick
 const fs = require('fs');
 const path = require('path');
 const im = require('imagemagick');
+
+
+
 
 exports.convertController = async (req, res) => {
   try {
@@ -13,44 +17,49 @@ exports.convertController = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
         return;
       }
-
+      
       const pdfFiles = files.filter(file => path.extname(file).toLowerCase() === '.pdf');
 
       pdfFiles.forEach((pdfFile) => {
         const fileName = path.basename(pdfFile, path.extname(pdfFile));
 
         // 1. Convert PDF to multi-page TIFF
-        const multiPageTiffPath = path.join(outputFolder, `${fileName}.tiff`);
+        const multiPageTiffPath = path.join(outputFolder, `${fileName}.tif`);
         im.convert([
           path.join(uploadsFolder, pdfFile),
-          '-density', '100', '-quality', '100', 
-          '-resize', '768x512!', '-compress', 'jpeg', 
-          multiPageTiffPath
+          '-compress','LZW', 
+          '-density','300',
+          '-quality','100',
+          '-sharpen', '0x1.0',
+          '-extent','0x0',  
+          '-append',
+           multiPageTiffPath
         ], async (err, stdout) => {
           if (err) {
             console.error(`Error converting ${pdfFile} to multi-page TIFF:`, err);
             res.status(500).json({ error: 'Internal Server Error' });
             return;
           }
+          console.log(`Successfully converted ${pdfFile} to TIFF`);
 
           // 2. Convert multi-page TIFF to single-page TIFF 
-          const singlePageTiffPath = path.join(outputFolder, `${fileName}_combined.tiff`);
-          im.convert([
-            multiPageTiffPath,
-            '-gravity', 'center',
-            '-extent', '0x0',       
-            '-append', 
-            singlePageTiffPath
-          ], async (err, stdout) => {
-            if (err) {
-              console.error(`Error combining ${pdfFile} TIFF pages:`, err);
-              res.status(500).json({ error: 'Internal Server Error' });
-              return;
-            }
-            fs.unlinkSync(multiPageTiffPath);
+          // const singlePageTiffPath = path.join(outputFolder, `${fileName}_combined.tiff`);
+          // im.convert([
+          //   multiPageTiffPath,
+          //   // '-gravity', 'center', 
+          //   // '-extent','0x0',
+          //   // '-append',
+          //   singlePageTiffPath
+          // ], async (err, stdout) => {
+          //   if (err) {
+          //     console.error(`Error combining ${pdfFile} TIFF pages:`, err);
+          //     res.status(500).json({ error: 'Internal Server Error' });
+          //     return;
+          //   }
+          //   fs.unlinkSync(multiPageTiffPath);
 
-            console.log(`Successfully converted ${pdfFile} to TIFF`);
-          });
+          //   console.log(`Successfully converted ${pdfFile} to TIFF`);
+          // });
         });
       });
 
