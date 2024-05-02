@@ -9,7 +9,7 @@ This project offers a solution for converting multiple-page PDF files into singl
 - Converts multiple-page PDFs to single-page TIFF images.
 - Utilizes a RESTful API for easy integration into existing systems.
 - Supports uploading multiple PDF files simultaneously.
-- Implements conversion using ImageMagick library for PDF to PNG conversion and Ghostscript for intermediate steps.
+- Implements conversion using ImageMagick library for PDF to JPEG conversion and Ghostscript for intermediate steps.
 - Provides clean and organized code structure for easy maintenance and modification.
 
 ## Installation
